@@ -23,7 +23,7 @@ function parseHtml(html) {
         const content = match[3];
 
         const extractField = (label, nextLabel) => {
-            const regex = new RegExp(`${label}:\\s*([\\s\\S]*?)(?=<br\\s*\\/?>|${nextLabel}:)`, 'i');
+            const regex = new RegExp(`${label}:\s*([\s\S]*?)(?=<br\s*\\/?>|${nextLabel}:)`, 'i');
             const m = content.match(regex);
             return m ? m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : '';
         };
@@ -471,12 +471,12 @@ function renderGUI() {
 
     function parseSizeToMB(sizeStr) {
       if (!sizeStr) return Infinity;
-      const sizes = sizeStr.match(/([\\d.]+)\\s*(GB|MB)/gi);
+      const sizes = sizeStr.match(/([\d.]+)\s*(GB|MB)/gi);
       if (!sizes) return Infinity;
       
       let maxMB = 0;
       sizes.forEach(s => {
-        const m = s.match(/([\\d.]+)\\s*(GB|MB)/i);
+        const m = s.match(/([\d.]+)\s*(GB|MB)/i);
         if (m) {
           const v = parseFloat(m[1]);
           const u = m[2].toUpperCase();
@@ -504,7 +504,7 @@ function renderGUI() {
       
       let maxSizeMB = Infinity;
       if (maxSizeStr) {
-        const match = maxSizeStr.match(/([\\d.]+)\\s*(gb|mb)?/i);
+        const match = maxSizeStr.match(/([\d.]+)\s*(gb|mb)?/i);
         if (match) {
           const val = parseFloat(match[1]);
           const unit = match[2] ? match[2].toUpperCase() : 'GB';
@@ -514,7 +514,7 @@ function renderGUI() {
 
       const filtered = allScrapedData.filter(game => {
         if (searchTerm) {
-          const searchBlob = \`\${game.title || ''} \${game.genres || ''} \${game.companies || ''} \${game.languages || ''}\`.toLowerCase();
+          const searchBlob = `${game.title || ''} ${game.genres || ''} ${game.companies || ''} ${game.languages || ''}`.toLowerCase();
           if (!searchBlob.includes(searchTerm)) return false;
         }
         
@@ -526,7 +526,7 @@ function renderGUI() {
         return true;
       });
 
-      document.getElementById('filterStats').innerText = \`Showing \${filtered.length} of \${allScrapedData.length} entries\`;
+      document.getElementById('filterStats').innerText = `Showing ${filtered.length} of ${allScrapedData.length} entries`;
       renderResultsGrid(filtered);
       updateExportLinks(filtered);
     }
@@ -534,16 +534,16 @@ function renderGUI() {
     function updateExportLinks(data) {
       const csvHeaders = ["Title", "URL", "Genres", "Companies", "Languages", "Original Size", "Repack Size"];
       const csvRows = data.map(g => [
-        \`"\${g.title.replace(/"/g, '""')}"\`,
+        `"${g.title.replace(/"/g, '""')}"`,
         g.url,
-        \`"\${(g.genres || '').replace(/"/g, '""')}"\`,
-        \`"\${(g.companies || '').replace(/"/g, '""')}"\`,
-        \`"\${(g.languages || '').replace(/"/g, '""')}"\`,
-        \`"\${(g.originalSize || '').replace(/"/g, '""')}"\`,
-        \`"\${(g.repackSize || '').replace(/"/g, '""')}"\`
+        `"${(g.genres || '').replace(/"/g, '""')}"`,
+        `"${(g.companies || '').replace(/"/g, '""')}"`,
+        `"${(g.languages || '').replace(/"/g, '""')}"`,
+        `"${(g.originalSize || '').replace(/"/g, '""')}"`,
+        `"${(g.repackSize || '').replace(/"/g, '""')}"`
       ].join(","));
       
-      const csvContent = "data:text/csv;charset=utf-8," + csvHeaders.join(",") + "\\n" + csvRows.join("\\n");
+      const csvContent = "data:text/csv;charset=utf-8," + csvHeaders.join(",") + "\n" + csvRows.join("\n");
       const jsonContent = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
       
       const csvBtn = document.getElementById('exportCsv');
@@ -562,75 +562,75 @@ function renderGUI() {
         : 'flex flex-col gap-3';
 
       if (data.length === 0) {
-        gridDiv.innerHTML = \`
+        gridDiv.innerHTML = `
           <div class="glass-inner p-8 text-center fade-up col-span-full">
             <p style="color: var(--text-secondary);">No entries match your current filters.</p>
           </div>
-        \`;
+        `;
         return;
       }
 
       let html = '';
       data.forEach((game, index) => {
         if (currentView === 'grid') {
-          html += \`
-          <div class="glass-inner p-6 fade-up" style="animation-delay: \${Math.min(index * 20, 200)}ms">
+          html += `
+          <div class="glass-inner p-6 fade-up" style="animation-delay: ${Math.min(index * 20, 200)}ms">
             <div class="flex justify-between items-start mb-4 gap-4">
-              <h3 class="leading-snug line-clamp-2" title="\${game.title}">\${game.title}</h3>
-              <span class="badge-id whitespace-nowrap">#\${String(index + 1).padStart(3, '0')}</span>
+              <h3 class="leading-snug line-clamp-2" title="${game.title}">${game.title}</h3>
+              <span class="badge-id whitespace-nowrap">#${String(index + 1).padStart(3, '0')}</span>
             </div>
             
             <!-- Game Details Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 mb-4 text-sm" style="color: var(--text-secondary);">
-              \${game.genres ? \`<div class="flex gap-2"><span class="font-semibold" style="color: var(--text-primary);">Genres:</span> <span class="truncate" title="\${game.genres}">\${game.genres}</span></div>\` : ''}
-              \${game.companies ? \`<div class="flex gap-2"><span class="font-semibold" style="color: var(--text-primary);">Companies:</span> <span class="truncate" title="\${game.companies}">\${game.companies}</span></div>\` : ''}
-              \${game.languages ? \`<div class="flex gap-2"><span class="font-semibold" style="color: var(--text-primary);">Languages:</span> <span class="truncate" title="\${game.languages}">\${game.languages}</span></div>\` : ''}
+              ${game.genres ? `<div class="flex gap-2"><span class="font-semibold" style="color: var(--text-primary);">Genres:</span> <span class="truncate" title="${game.genres}">${game.genres}</span></div>` : ''}
+              ${game.companies ? `<div class="flex gap-2"><span class="font-semibold" style="color: var(--text-primary);">Companies:</span> <span class="truncate" title="${game.companies}">${game.companies}</span></div>` : ''}
+              ${game.languages ? `<div class="flex gap-2"><span class="font-semibold" style="color: var(--text-primary);">Languages:</span> <span class="truncate" title="${game.languages}">${game.languages}</span></div>` : ''}
               <div class="flex gap-4">
-                \${game.originalSize ? \`<div><span class="font-semibold" style="color: var(--text-primary);">Original:</span> \${game.originalSize}</div>\` : ''}
-                \${game.repackSize ? \`<div><span class="font-semibold" style="color: var(--accent);">Repack:</span> \${game.repackSize}</div>\` : ''}
+                ${game.originalSize ? `<div><span class="font-semibold" style="color: var(--text-primary);">Original:</span> ${game.originalSize}</div>` : ''}
+                ${game.repackSize ? `<div><span class="font-semibold" style="color: var(--accent);">Repack:</span> ${game.repackSize}</div>` : ''}
               </div>
             </div>
 
             <div class="flex items-center gap-3 rounded-xl p-3 border" style="background-color: var(--bg-surface-2); border-color: var(--border);">
-              <code class="text-xs truncate flex-1 mono" style="color: var(--text-secondary);">\${game.url}</code>
-              <button onclick="copyToClipboard('\${game.url}', this)" class="transition-colors p-1.5 rounded-lg hover:bg-[var(--bg-surface-3)]" style="color: var(--text-muted);" title="Copy URL">
+              <code class="text-xs truncate flex-1 mono" style="color: var(--text-secondary);">${game.url}</code>
+              <button onclick="copyToClipboard('${game.url}', this)" class="transition-colors p-1.5 rounded-lg hover:bg-[var(--bg-surface-3)]" style="color: var(--text-muted);" title="Copy URL">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
               </button>
-              <a href="\${game.url}" target="_blank" class="transition-colors p-1.5 rounded-lg hover:bg-[var(--bg-surface-3)]" style="color: var(--text-muted);" title="Open Link">
+              <a href="${game.url}" target="_blank" class="transition-colors p-1.5 rounded-lg hover:bg-[var(--bg-surface-3)]" style="color: var(--text-muted);" title="Open Link">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
               </a>
             </div>
-          </div>\`;
+          </div>`;
         } else {
           // List View
-          html += \`
-          <div class="glass-inner p-4 fade-up flex flex-col md:flex-row md:items-center gap-4" style="animation-delay: \${Math.min(index * 10, 100)}ms">
+          html += `
+          <div class="glass-inner p-4 fade-up flex flex-col md:flex-row md:items-center gap-4" style="animation-delay: ${Math.min(index * 10, 100)}ms">
             <div class="flex items-center gap-4 flex-1 min-w-0">
-              <span class="badge-id whitespace-nowrap">#\${String(index + 1).padStart(3, '0')}</span>
+              <span class="badge-id whitespace-nowrap">#${String(index + 1).padStart(3, '0')}</span>
               <div class="min-w-0 flex-1">
-                <h3 class="text-base font-semibold truncate leading-tight" title="\${game.title}">\${game.title}</h3>
+                <h3 class="text-base font-semibold truncate leading-tight" title="${game.title}">${game.title}</h3>
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs" style="color: var(--text-muted);">
-                  \${game.genres ? \`<span class="truncate max-w-[200px]" title="\${game.genres}">\${game.genres}</span>\` : ''}
-                  \${game.genres && game.companies ? \`<span>•</span>\` : ''}
-                  \${game.companies ? \`<span class="truncate max-w-[150px]" title="\${game.companies}">\${game.companies}</span>\` : ''}
+                  ${game.genres ? `<span class="truncate max-w-[200px]" title="${game.genres}">${game.genres}</span>` : ''}
+                  ${game.genres && game.companies ? `<span>•</span>` : ''}
+                  ${game.companies ? `<span class="truncate max-w-[150px]" title="${game.companies}">${game.companies}</span>` : ''}
                 </div>
               </div>
             </div>
             
             <div class="flex items-center gap-6 text-xs mono shrink-0" style="color: var(--text-secondary);">
-              \${game.originalSize ? \`<div><span style="color: var(--text-muted);">Orig:</span> \${game.originalSize}</div>\` : ''}
-              <div><span style="color: var(--text-muted);">Repack:</span> <span style="color: var(--accent); font-weight: 600;">\${game.repackSize || 'N/A'}</span></div>
+              ${game.originalSize ? `<div><span style="color: var(--text-muted);">Orig:</span> ${game.originalSize}</div>` : ''}
+              <div><span style="color: var(--text-muted);">Repack:</span> <span style="color: var(--accent); font-weight: 600;">${game.repackSize || 'N/A'}</span></div>
             </div>
 
             <div class="flex items-center gap-2 shrink-0">
-              <button onclick="copyToClipboard('\${game.url}', this)" class="transition-colors p-2 rounded-lg hover:bg-[var(--bg-surface-3)]" style="color: var(--text-muted);" title="Copy URL">
+              <button onclick="copyToClipboard('${game.url}', this)" class="transition-colors p-2 rounded-lg hover:bg-[var(--bg-surface-3)]" style="color: var(--text-muted);" title="Copy URL">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
               </button>
-              <a href="\${game.url}" target="_blank" class="transition-colors p-2 rounded-lg hover:bg-[var(--bg-surface-3)]" style="color: var(--text-muted);" title="Open Link">
+              <a href="${game.url}" target="_blank" class="transition-colors p-2 rounded-lg hover:bg-[var(--bg-surface-3)]" style="color: var(--text-muted);" title="Open Link">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
               </a>
             </div>
-          </div>\`;
+          </div>`;
         }
       });
       gridDiv.innerHTML = html;
@@ -640,19 +640,19 @@ function renderGUI() {
       allScrapedData = data;
       const resultsDiv = document.getElementById('results');
       if (!data || data.length === 0) {
-        resultsDiv.innerHTML = \`
+        resultsDiv.innerHTML = `
           <div class="glass-panel p-8 text-center fade-up">
             <h3 class="mb-2">No Stories Found</h3>
             <p style="color: var(--text-secondary);">Verify your target URL and page range parameters.</p>
-          </div>\`;
+          </div>`;
         return;
       }
 
-      let html = \`
+      let html = `
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 fade-up">
           <div>
             <h2>Scan Results</h2>
-            <p class="mt-1" style="color: var(--text-secondary);">Successfully parsed <span class="mono" style="color: var(--accent);">\${data.length}</span> entries.</p>
+            <p class="mt-1" style="color: var(--text-secondary);">Successfully parsed <span class="mono" style="color: var(--accent);">${data.length}</span> entries.</p>
           </div>
           <div class="flex items-center gap-4">
             <!-- View Toggle -->
@@ -702,12 +702,12 @@ function renderGUI() {
             </div>
           </div>
           <div class="mt-5 pt-4 border-t flex items-center gap-2" style="border-color: var(--border);">
-            <span class="text-xs font-medium mono" style="color: var(--text-muted);" id="filterStats">Showing \${data.length} of \${data.length} entries</span>
+            <span class="text-xs font-medium mono" style="color: var(--text-muted);" id="filterStats">Showing ${data.length} of ${data.length} entries</span>
           </div>
         </div>
 
         <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      \`;
+      `;
       
       resultsDiv.innerHTML = html;
       
@@ -737,17 +737,17 @@ function renderGUI() {
       
       startProgress();
       try {
-        const res = await fetch(\`/api/scan?url=\${encodeURIComponent(url)}&start=\${start}&end=\${end}\`);
+        const res = await fetch(`/api/scan?url=${encodeURIComponent(url)}&start=${start}&end=${end}`);
         const data = await res.json();
         finishProgress(true);
         if (data.error) throw new Error(data.error);
         setTimeout(() => renderResults(data), 300);
       } catch (err) {
         finishProgress(false);
-        resultsDiv.innerHTML = \`
+        resultsDiv.innerHTML = `
           <div class="glass-panel p-6 fade-up" style="border-color: var(--accent); border-width: 1px;">
-            <p class="font-medium" style="color: var(--accent);">Error: \${err.message}</p>
-          </div>\`;
+            <p class="font-medium" style="color: var(--accent);">Error: ${err.message}</p>
+          </div>`;
       }
     });
   </script>
