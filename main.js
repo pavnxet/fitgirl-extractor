@@ -22,13 +22,19 @@ function parseHtml(html) {
         const title = match[2].replace(/<[^>]+>/g, '').trim();
         const content = match[3];
 
-        const extractField = (label, nextLabel) => {
-            const regex = new RegExp(`${label}:\s*([\s\S]*?)(?=<br\s*\\/?>|${nextLabel}:)`, 'i');
+const extractField = (label, nextLabel) => {
+            // Escape special regex characters in labels to handle "/" in "Genres/Tags"
+            const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+            const escapedLabel = escapeRegex(label);
+            const escapedNextLabel = escapeRegex(nextLabel);
+            // Match the label, then capture content until we hit a <br>, the next label, </p>, or "Download" section
+            // Use [^<]* to match non-tag content, preventing capture from spanning multiple fields
+            const regex = new RegExp(`${escapedLabel}:\s*([^<]*(?:<(?!br\s*/?>)[^<]*)*)(?=<br\s*/?>|${escapedNextLabel}:|</p>|Download|$)`, 'i');
             const m = content.match(regex);
             return m ? m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : '';
         };
 
-        const genres = extractField('Genres\\/Tags', 'Companies');
+        const genres = extractField('Genres/Tags', 'Companies');
         const companies = extractField('Companies', 'Languages');
         const languages = extractField('Languages', 'Original Size');
         const originalSize = extractField('Original Size', 'Repack Size');
@@ -544,12 +550,18 @@ function renderGUI() {
       ].join(","));
       
       const csvContent = "data:text/csv;charset=utf-8," + csvHeaders.join(",") + "\n" + csvRows.join("\n");
-      const jsonContent = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+      const jsonContent = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
       
       const csvBtn = document.getElementById('exportCsv');
       const jsonBtn = document.getElementById('exportJson');
-      if (csvBtn) csvBtn.href = csvContent;
-      if (jsonBtn) jsonBtn.href = jsonContent;
+      if (csvBtn) {
+        csvBtn.href = csvContent;
+        csvBtn.download = 'fitgirl_scrape.csv';
+      }
+      if (jsonBtn) {
+        jsonBtn.href = jsonContent;
+        jsonBtn.download = 'fitgirl_scrape.json';
+      }
     }
 
     function renderResultsGrid(data) {
