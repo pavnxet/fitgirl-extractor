@@ -44,7 +44,7 @@ Featuring a **Warm Editorial Cream Aesthetic** with interactive glassmorphism, n
 
 ```
 .
-├── main.js       # Core worker entry point (includes scraper logic, GUI renderer, and router)
+├── worker.js     # Core worker entry point (includes scraper logic, GUI renderer, and router)
 └── README.md     # Project documentation
 ```
 
@@ -106,7 +106,7 @@ npm install -g wrangler
 ### 2. Run the Worker in Development Mode
 Execute Wrangler in the repository root directory:
 ```bash
-npx wrangler dev main.js
+npx wrangler dev worker.js
 ```
 This starts a local development server (usually at `http://localhost:8787`). Open this URL in your browser to interact with the GUI.
 
@@ -125,7 +125,7 @@ npx wrangler login
 Create a `wrangler.toml` file in the root directory:
 ```toml
 name = "fitgirl-extractor"
-main = "main.js"
+main = "worker.js"
 compatibility_date = "2024-04-01"
 
 [site]
