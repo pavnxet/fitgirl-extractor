@@ -324,6 +324,65 @@ function renderGUI() {
   </style>
 </head>
 <body class="antialiased">
+  <!-- DISCLAIMER MODAL -->
+  <div id="disclaimerModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 hidden">
+    <div class="glass-panel max-w-2xl w-full max-h-[85vh] flex flex-col fade-up overflow-hidden shadow-2xl">
+      <!-- Modal Header -->
+      <div class="p-6 border-b flex justify-between items-center shrink-0" style="border-color: var(--border);">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--accent-muted);">
+            <svg class="w-4 h-4" style="color: var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+          </div>
+          <h2 class="text-xl font-bold" style="font-family: 'Fraunces', serif;">Disclaimer</h2>
+        </div>
+      </div>
+      
+      <!-- Modal Content (Scrollable) -->
+      <div class="p-6 overflow-y-auto space-y-4 text-sm leading-relaxed" style="color: var(--text-secondary);">
+        <p class="font-medium mono text-xs" style="color: var(--text-muted);">Effective Date: June 2026</p>
+        
+        <h3 class="text-base font-semibold" style="color: var(--text-primary);">1. Purpose of the Project</h3>
+        <p>The <strong>FitGirl Repacks Archive Scanner</strong> is an open-source, educational project developed solely for the purpose of demonstrating advanced web scraping, concurrent data fetching, and metadata indexing techniques. It is designed to read, parse, and organize publicly available text data (metadata) from third-party websites into a structured, searchable format.</p>
+
+        <h3 class="text-base font-semibold" style="color: var(--text-primary);">2. No Hosting or Distribution of Content</h3>
+        <p><strong>I do not host, store, upload, distribute, or maintain any game files, executables, ISOs, torrents, or copyrighted media.</strong></p>
+        <p>This tool acts strictly as a metadata indexer and search utility. It only extracts publicly visible text (such as game titles, release sizes, genres, and external URLs) and displays it in a structured UI. I have no control over, and assume no responsibility for, the content, privacy policies, safety, or practices of any third-party sites, file hosters, or external links indexed by this tool.</p>
+
+        <h3 class="text-base font-semibold" style="color: var(--text-primary);">3. Non-Affiliation</h3>
+        <p>I am <strong>not</strong> affiliated with, endorsed by, sponsored by, or in any way officially connected with FitGirl Repacks, any game development studios, publishers, or copyright holders. All trademarks, service marks, trade names, and logos displayed are the property of their respective owners and are used solely for descriptive and indexing purposes.</p>
+
+        <h3 class="text-base font-semibold" style="color: var(--text-primary);">4. Stance on Piracy and Ethical Use</h3>
+        <p><strong>This project does not condone, encourage, or promote piracy, copyright infringement, or any illegal or unethical activities.</strong></p>
+        <p>Piracy negatively impacts the gaming industry and the livelihoods of the hardworking developers, artists, and creators who make these games. I strongly urge all users to respect intellectual property laws and support the creators by purchasing games through official, authorized storefronts (e.g., Steam, Epic Games Store, GOG, PlayStation, Xbox).</p>
+
+        <h3 class="text-base font-semibold" style="color: var(--text-primary);">5. Limitation of Liability</h3>
+        <p>By using this tool, you acknowledge and agree that the developer (<strong>pavnxet</strong>) shall not be held liable for any direct, indirect, incidental, consequential, or special damages arising out of or in connection with:</p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Your use of the tool, the scraped metadata, or the generated CSV exports.</li>
+          <li>Any external links accessed or downloaded through the indexed data.</li>
+          <li>Any illegal, unethical, or unauthorized activities you choose to engage in using the information provided by this indexer.</li>
+          <li>Any malware, viruses, or legal issues encountered on third-party websites or file hosts.</li>
+        </ul>
+        <p>You are solely responsible for ensuring that your use of any indexed links complies with your local, national, and international copyright laws.</p>
+
+        <h3 class="text-base font-semibold" style="color: var(--text-primary);">6. DMCA and Takedown Notices</h3>
+        <p>Because this tool merely indexes external URLs and does not host any copyrighted content, DMCA takedown requests regarding the actual files should be directed to the respective third-party hosting sites or search engines. However, if you are a copyright holder or authorized representative and wish to have your specific metadata, titles, or domains blocked from being processed by this specific scraping engine, please contact me or open an issue on the repository, and I will implement a blocklist filter.</p>
+
+        <hr style="border-color: var(--border);" class="my-4">
+        <p class="text-center text-xs" style="color: var(--text-muted);">Crafted with ❤️ by <a href="https://pavnxet.github.io/" target="_blank" rel="noopener noreferrer" class="hover:underline font-semibold" style="color: var(--text-secondary);">pavnxet</a></p>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-6 border-t flex justify-end gap-3 shrink-0" style="border-color: var(--border);">
+        <button id="acceptDisclaimerBtn" class="btn-primary py-2.5 px-6 text-sm font-semibold flex items-center gap-2">
+          <span>I Understand & Accept</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="max-w-4xl mx-auto px-6 py-12 md:py-20">
     
     <!-- HEADER -->
@@ -397,6 +456,19 @@ function renderGUI() {
   <script>
     // Crafted with ❤️ by pavnxet (https://pavnxet.github.io/)
     
+    // Disclaimer Modal Logic
+    const disclaimerModal = document.getElementById('disclaimerModal');
+    const acceptDisclaimerBtn = document.getElementById('acceptDisclaimerBtn');
+    
+    if (!localStorage.getItem('disclaimerAccepted')) {
+      disclaimerModal.classList.remove('hidden');
+    }
+    
+    acceptDisclaimerBtn.addEventListener('click', () => {
+      localStorage.setItem('disclaimerAccepted', 'true');
+      disclaimerModal.classList.add('hidden');
+    });
+
     // Theme Toggle Logic
     const themeToggle = document.getElementById('themeToggle');
     const root = document.documentElement;
