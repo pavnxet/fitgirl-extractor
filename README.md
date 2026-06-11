@@ -1,6 +1,6 @@
 # 🕵️‍♀️ FitGirl Repacks Archive Scanner
 
-A high-performance, concurrent web scraper and search interface designed as a Cloudflare Worker. This tool allows users to scan the FitGirl Repacks archive pages, parse metadata from entries (genres, developers, size, language, and links), filter/refine the results dynamically in real-time, and export the datasets as CSV or JSON.
+A high-performance, concurrent web scraper and search interface designed as a Cloudflare Worker. This tool allows users to scan the FitGirl Repacks archive pages, parse metadata from entries (genres, developers, size, language, and links), filter/refine the results dynamically in real-time, and export the datasets as CSV.
 
 Featuring a **Warm Editorial Cream Aesthetic** with interactive glassmorphism, native dark/light mode toggle, and micro-animations.
 
@@ -26,7 +26,7 @@ Featuring a **Warm Editorial Cream Aesthetic** with interactive glassmorphism, n
   - Instant text-search against all metadata fields (titles, genres, companies, languages).
   - Repack size filter allowing query values such as `5 GB` or `800 MB` to dynamically filter games above/below sizes.
 - **📋 Dual View Modes**: Toggle between a detail-rich **Grid View** (with individual card details) and a compact, scan-friendly **List View**.
-- **📥 One-Click Export**: Download the filtered or full scraped results instantly as a standard `.csv` or formatted `.json` file directly from the browser.
+- **📥 One-Click Export**: Download the filtered or full scraped results instantly as a standard `.csv` file directly from the browser.
 - **📋 Copy-to-Clipboard**: Copy game page URLs directly to the clipboard with visual confirmation feedback.
 
 ---

@@ -410,6 +410,7 @@ function renderGUI() {
 
     let progressInterval;
     let allScrapedData = [];
+    let currentFilteredData = [];
     let currentView = 'grid'; // 'grid' or 'list'
     
     function startProgress() {
@@ -469,6 +470,69 @@ function renderGUI() {
       });
     }
 
+    window.copyAllUrls = function() {
+      const urls = currentFilteredData.map(g => g.url).join('\\n');
+      if (!urls) return;
+      navigator.clipboard.writeText(urls).then(() => {
+        const btn = document.getElementById('copyAllBtn');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<svg class="w-4 h-4" style="color: var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span>Copied!</span>';
+        setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+      });
+    }
+
+    window.exportToCSV = function() {
+      if (!currentFilteredData || currentFilteredData.length === 0) return;
+
+      const headers = ['Title', 'URL', 'Genres/Tags', 'Companies', 'Languages', 'Original Size', 'Repack Size'];
+      
+      const escapeCsv = (str) => {
+        if (!str) return '';
+        str = String(str);
+        // Wrap in quotes if it contains comma, quote, or newline
+        if (str.includes(',') || str.includes('"') || str.includes('\\n') || str.includes('\\r')) {
+          return '"' + str.replace(/"/g, '""') + '"';
+        }
+        return str;
+      };
+
+      const csvRows = [headers.join(',')];
+
+      currentFilteredData.forEach(game => {
+        const row = [
+          escapeCsv(game.title),
+          escapeCsv(game.url),
+          escapeCsv(game.genres),
+          escapeCsv(game.companies),
+          escapeCsv(game.languages),
+          escapeCsv(game.originalSize),
+          escapeCsv(game.repackSize)
+        ];
+        csvRows.push(row.join(','));
+      });
+
+      const csvString = csvRows.join('\\n');
+      const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      const dateStr = new Date().toISOString().slice(0, 10);
+      link.setAttribute('download', \`fitgirl-archive-\${dateStr}.csv\`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      const btn = document.getElementById('exportCsvBtn');
+      if (btn) {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<svg class="w-4 h-4" style="color: var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span>Exported!</span>';
+        setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+      }
+    }
+
     function parseSizeToMB(sizeStr) {
       if (!sizeStr) return Infinity;
       const sizes = sizeStr.match(/([\\d.]+)\\s*(GB|MB)/gi);
@@ -493,8 +557,8 @@ function renderGUI() {
       document.getElementById(mode === 'grid' ? 'viewGrid' : 'viewList').classList.add('active');
       
       const gridDiv = document.getElementById('resultsGrid');
-      if (gridDiv && allScrapedData.length > 0) {
-        renderResultsGrid(allScrapedData);
+      if (gridDiv && currentFilteredData.length > 0) {
+        renderResultsGrid(currentFilteredData);
       }
     }
 
@@ -526,30 +590,9 @@ function renderGUI() {
         return true;
       });
 
+      currentFilteredData = filtered;
       document.getElementById('filterStats').innerText = \`Showing \${filtered.length} of \${allScrapedData.length} entries\`;
       renderResultsGrid(filtered);
-      updateExportLinks(filtered);
-    }
-
-    function updateExportLinks(data) {
-      const csvHeaders = ["Title", "URL", "Genres", "Companies", "Languages", "Original Size", "Repack Size"];
-      const csvRows = data.map(g => [
-        \`"\${g.title.replace(/"/g, '""')}"\`,
-        g.url,
-        \`"\${(g.genres || '').replace(/"/g, '""')}"\`,
-        \`"\${(g.companies || '').replace(/"/g, '""')}"\`,
-        \`"\${(g.languages || '').replace(/"/g, '""')}"\`,
-        \`"\${(g.originalSize || '').replace(/"/g, '""')}"\`,
-        \`"\${(g.repackSize || '').replace(/"/g, '""')}"\`
-      ].join(","));
-      
-      const csvContent = "data:text/csv;charset=utf-8," + csvHeaders.join(",") + "\\n" + csvRows.join("\\n");
-      const jsonContent = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
-      
-      const csvBtn = document.getElementById('exportCsv');
-      const jsonBtn = document.getElementById('exportJson');
-      if (csvBtn) csvBtn.href = csvContent;
-      if (jsonBtn) jsonBtn.href = jsonContent;
     }
 
     function renderResultsGrid(data) {
@@ -638,6 +681,7 @@ function renderGUI() {
 
     function renderResults(data) {
       allScrapedData = data;
+      currentFilteredData = data;
       const resultsDiv = document.getElementById('results');
       if (!data || data.length === 0) {
         resultsDiv.innerHTML = \`
@@ -654,7 +698,7 @@ function renderGUI() {
             <h2>Scan Results</h2>
             <p class="mt-1" style="color: var(--text-secondary);">Successfully parsed <span class="mono" style="color: var(--accent);">\${data.length}</span> entries.</p>
           </div>
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3 flex-wrap">
             <!-- View Toggle -->
             <div class="flex items-center gap-1 bg-[var(--bg-surface-2)] p-1 rounded-xl border" style="border-color: var(--border);">
               <button id="viewGrid" class="p-2 rounded-lg transition-all view-btn active" title="Grid View">
@@ -664,16 +708,14 @@ function renderGUI() {
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
               </button>
             </div>
-            <div class="flex gap-2">
-              <a href="#" id="exportCsv" download="fitgirl_scrape.csv" class="btn-secondary py-2 px-3 flex items-center gap-2 text-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> 
-                CSV
-              </a>
-              <a href="#" id="exportJson" download="fitgirl_scrape.json" class="btn-secondary py-2 px-3 flex items-center gap-2 text-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> 
-                JSON
-              </a>
-            </div>
+            <button id="copyAllBtn" onclick="copyAllUrls()" class="btn-secondary py-2 px-3 flex items-center gap-2 text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> 
+              <span>Copy URLs</span>
+            </button>
+            <button id="exportCsvBtn" onclick="exportToCSV()" class="btn-secondary py-2 px-3 flex items-center gap-2 text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              <span>Export CSV</span>
+            </button>
           </div>
         </div>
 
@@ -724,7 +766,6 @@ function renderGUI() {
       });
       
       renderResultsGrid(data);
-      updateExportLinks(data);
     }
 
     document.getElementById('scanForm').addEventListener('submit', async (e) => {
